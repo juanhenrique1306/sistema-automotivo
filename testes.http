@@ -1,0 +1,29 @@
+### 1. Cadastrar Marca (Clique no Play ao lado desta linha)
+POST http://localhost:8080/api/marcas
+Content-Type: application/json
+
+{
+  "nome": "Fiat"
+}
+
+### 2. Cadastrar Veículo
+POST http://localhost:8080/api/veiculos
+Content-Type: application/json
+
+{
+  "modelo": "Uno",
+  "marca": {
+    "id": 1
+  },
+  "anoFabricacao": 2020,
+  "cor": "Prata",
+  "preco": 45000.0,
+  "quilometragem": 30000,
+  "statusDisponibilidade": "Disponível"
+}
+
+### 3. Listar Todos os Veículos
+GET http://localhost:8080/api/veiculos
+
+### 4. Filtrar por Status (Disponível)
+GET http://localhost:8080/api/veiculos/status/Disponívelw

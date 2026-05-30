@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Automotivo - Gestão Completa</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+
+<nav class="bg-blue-700 text-white shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+        <h1 class="text-2xl font-extrabold tracking-tight">Auto<span class="text-blue-300">Gestão</span></h1>
+        <div class="space-x-4 flex items-center">
+            <button onclick="mostrarAba('listagem')" class="hover:text-blue-200 font-semibold transition">Estoque</button>
+
+            <button id="nav-btn-login" onclick="mostrarAba('login')" class="bg-white text-blue-700 px-4 py-1 rounded-md font-bold hover:bg-gray-100 transition shadow">Login Restrito</button>
+
+            <button id="nav-btn-marcas" onclick="mostrarAba('marcas')" class="hidden bg-indigo-600 text-white px-4 py-1 rounded-md font-bold hover:bg-indigo-700 transition shadow">Gerenciar Marcas</button>
+            <button id="nav-btn-cadastro" onclick="mostrarAba('cadastro')" class="hidden bg-green-500 text-white px-4 py-1 rounded-md font-bold hover:bg-green-600 transition shadow">Cadastrar Veículo</button>
+
+            <button id="nav-btn-sair" onclick="fazerLogout()" class="hidden text-red-300 hover:text-red-100 font-bold ml-4">Sair</button>
+        </div>
+    </div>
+</nav>
+
+<div class="max-w-7xl mx-auto p-4 md:p-8">
+
+    <div id="aba-login" class="hidden max-w-md mx-auto bg-white p-8 rounded-xl shadow-xl border-t-4 border-blue-600 mt-10">
+        <div class="text-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-800">Acesso Administrative</h2>
+            <p class="text-gray-500 text-sm mt-1">Faça login para gerenciar o estoque e as marcas</p>
+        </div>
+
+        <form id="form-login" onsubmit="fazerLogin(event)" class="space-y-5">
+            <div>
+                <label class="block text-sm font-semibold text-gray-700">Usuário</label>
+                <input type="text" id="usuario" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-3 border focus:border-blue-500 focus:ring-blue-500">
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-gray-700">Senha</label>
+                <input type="password" id="senha" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-3 border focus:border-blue-500 focus:ring-blue-500">
+            </div>
+            <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-md hover:bg-blue-700 transition shadow-lg">
+                Entrar no Sistema
+            </button>
+            <div class="text-center text-xs text-gray-400 mt-4">*Dica: admin / admin</div>
+        </form>
+    </div>
+
+    <div id="aba-marcas" class="hidden max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md border-t-4 border-indigo-600 mt-4">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">Gerenciar Marcas de Veículos</h2>
+
+        <form id="form-marca" onsubmit="salvarMarca(event)" class="space-y-4 mb-8 bg-gray-50 p-4 rounded-md border">
+            <h3 class="text-sm font-bold text-gray-600 uppercase">Cadastrar Nova Marca</h3>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Nome da Marca</label>
+                <input type="text" id="nomeMarca" required placeholder="Ex: BMW, Toyota, Volkswagen" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-indigo-500 focus:ring-indigo-500">
+            </div>
+            <button type="submit" class="bg-indigo-600 text-white font-bold py-2 px-4 rounded-md hover:bg-indigo-700 transition shadow text-sm">
+                Salvar Marca
+            </button>
+        </form>
+
+        <h3 class="text-lg font-bold text-gray-700 mb-3">Marcas Cadastradas no Banco</h3>
+        <div class="border rounded-md overflow-hidden bg-white shadow-sm">
+            <table class="min-w-full divide-y divide-gray-200 text-sm">
+                <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left font-semibold text-gray-600 uppercase tracking-wider">ID</th>
+                    <th class="px-6 py-3 text-left font-semibold text-gray-600 uppercase tracking-wider">Nome da Marca</th>
+                </tr>
+                </thead>
+                <tbody id="tabela-marcas-corpo" class="divide-y divide-gray-200">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="aba-listagem">
+        <div class="flex flex-col md:flex-row justify-between items-center mb-6">
+            <h2 class="text-3xl font-bold text-gray-800 mb-4 md:mb-0">Veículos Disponíveis</h2>
+
+            <div class="bg-white p-2 rounded-lg shadow flex flex-col md:flex-row gap-2 w-full md:w-auto">
+                <input type="text" id="filtro-modelo" placeholder="Buscar por modelo..." onkeyup="aplicarFiltros()" class="p-2 border rounded-md text-sm">
+                <select id="filtro-marca" onchange="aplicarFiltros()" class="p-2 border rounded-md text-sm">
+                    <option value="">Todas as Marcas</option>
+                </select>
+                <input type="number" id="filtro-ano" placeholder="Ano exato" onkeyup="aplicarFiltros()" class="p-2 border rounded-md text-sm w-24">
+                <input type="text" id="filtro-cor" placeholder="Cor" onkeyup="aplicarFiltros()" class="p-2 border rounded-md text-sm w-24">
+                <input type="number" id="filtro-km" placeholder="KM Máximo" onkeyup="aplicarFiltros()" class="p-2 border rounded-md text-sm w-28">
+                <input type="number" id="filtro-preco" placeholder="Preço Máximo" onkeyup="aplicarFiltros()" class="p-2 border rounded-md text-sm w-32">
+                <select id="filtro-status" onchange="aplicarFiltros()" class="p-2 border rounded-md text-sm">
+                    <option value="">Status</option>
+                    <option value="Disponível">Disponível</option>
+                    <option value="Vendido">Vendido</option>
+                </select>
+                <button onclick="limparFiltros()" class="bg-gray-200 hover:bg-gray-300 px-3 py-2 rounded-md text-sm font-semibold text-gray-700 transition">🧹 Limpar</button>
+            </div>
+        </div>
+
+        <div id="lista-veiculos" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        </div>
+
+        <div id="msg-vazio" class="hidden text-center py-12 text-gray-500 text-lg">
+            <span class="text-4xl block mb-3">🚗</span>
+            Nenhum veículo encontrado com os filtros selecionados.
+        </div>
+    </div>
+
+    <div id="aba-cadastro" class="hidden max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md border-t-4 border-green-500 mt-4">
+        <h2 id="titulo-form" class="text-2xl font-bold text-gray-800 mb-6">Cadastrar Novo Veículo</h2>
+        <form id="form-veiculo" onsubmit="salvarVeiculo(event)" class="space-y-4">
+
+            <input type="hidden" id="veiculoId">
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Modelo</label>
+                    <input type="text" id="modelo" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-green-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Marca</label>
+                    <select id="marcaId" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-green-500">
+                        <option value="">Carregando marcas...</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Ano</label>
+                    <input type="number" id="ano" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Cor</label>
+                    <input type="text" id="cor" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">KM</label>
+                    <input type="number" id="km" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Preço (R$)</label>
+                    <input type="number" step="0.01" id="preco" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Status</label>
+                    <select id="status" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                        <option value="Disponível">Disponível</option>
+                        <option value="Vendido">Vendido</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">URL da Imagem</label>
+                <input type="url" id="imagem" placeholder="Ex: https://img.com/carro.jpg" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+            </div>
+
+            <div class="flex justify-end space-x-2 mt-4">
+                <button type="button" onclick="mostrarAba('listagem')" class="bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded-md hover:bg-gray-400 transition">Cancelar</button>
+                <button type="submit" class="bg-green-600 text-white font-bold py-2 px-4 rounded-md hover:bg-green-700 transition shadow">Salvar Veículo</button>
+            </div>
+        </form>
+    </div>
+
+</div>
+
+<script>
+    let veiculosEstoque = [];
+    let marcasCadastradas = [];
+    let usuarioLogado = false;
+
+    // ================= LÓGICA DE LOGIN =================
+    function fazerLogin(event) {
+        event.preventDefault();
+        const user = document.getElementById('usuario').value;
+        const pass = document.getElementById('senha').value;
+
+        if (user === 'admin' && pass === 'admin') {
+            usuarioLogado = true;
+            document.getElementById('nav-btn-login').classList.add('hidden');
+            document.getElementById('nav-btn-marcas').classList.remove('hidden');
+            document.getElementById('nav-btn-cadastro').classList.remove('hidden');
+            document.getElementById('nav-btn-sair').classList.remove('hidden');
+            document.getElementById('form-login').reset();
+            mostrarAba('listagem');
+        } else {
+            alert('Usuário ou senha incorretos!');
+        }
+    }
+
+    function fazerLogout() {
+        usuarioLogado = false;
+        document.getElementById('nav-btn-login').classList.remove('hidden');
+        document.getElementById('nav-btn-marcas').classList.add('hidden');
+        document.getElementById('nav-btn-cadastro').classList.add('hidden');
+        document.getElementById('nav-btn-sair').classList.add('hidden');
+        mostrarAba('listagem');
+    }
+
+    function mostrarAba(aba) {
+        document.getElementById('aba-listagem').classList.toggle('hidden', aba !== 'listagem');
+        document.getElementById('aba-cadastro').classList.toggle('hidden', aba !== 'cadastro');
+        document.getElementById('aba-login').classList.toggle('hidden', aba !== 'login');
+        document.getElementById('aba-marcas').classList.toggle('hidden', aba !== 'marcas');
+
+        if(aba === 'listagem') {
+            carregarVeiculos();
+        } else if (aba === 'cadastro' && !document.getElementById('veiculoId').value) {
+            document.getElementById('form-veiculo').reset();
+            document.getElementById('titulo-form').innerText = "Cadastrar Novo Veículo";
+            carregarMarcas();
+        } else if (aba === 'marcas') {
+            renderizarTabelaMarcas();
+        }
+    }
+
+    // ================= FILTROS E BUSCA AVANÇADA =================
+    function aplicarFiltros() {
+        const fModelo = document.getElementById('filtro-modelo').value.toLowerCase();
+        const fMarca = document.getElementById('filtro-marca').value;
+        const fAno = document.getElementById('filtro-ano').value;
+        const fCor = document.getElementById('filtro-cor').value.toLowerCase();
+        const fKmMax = document.getElementById('filtro-km').value;
+        const fPrecoMax = document.getElementById('filtro-preco').value;
+        const fStatus = document.getElementById('filtro-status').value;
+
+        const filtrados = veiculosEstoque.filter(v => {
+            let match = true;
+            if (fModelo && !v.modelo.toLowerCase().includes(fModelo)) match = false;
+            if (fMarca && (!v.marca || v.marca.id.toString() !== fMarca)) match = false;
+            if (fAno && v.anoFabricacao.toString() !== fAno) match = false;
+            if (fCor && !v.cor.toLowerCase().includes(fCor)) match = false;
+            if (fKmMax && v.quilometragem > parseInt(fKmMax)) match = false;
+            if (fPrecoMax && v.preco > parseFloat(fPrecoMax)) match = false;
+            if (fStatus && v.statusDisponibilidade !== fStatus) match = false;
+            return match;
+        });
+
+        renderizarNaTela(filtrados);
+    }
+
+    function limparFiltros() {
+        document.getElementById('filtro-modelo').value = '';
+        document.getElementById('filtro-marca').value = '';
+        document.getElementById('filtro-ano').value = '';
+        document.getElementById('filtro-cor').value = '';
+        document.getElementById('filtro-km').value = '';
+        document.getElementById('filtro-preco').value = '';
+        document.getElementById('filtro-status').value = '';
+        aplicarFiltros();
+    }
+
+    // ================= CADASTRO DE MARCAS (POST) =================
+    async function salvarMarca(event) {
+        event.preventDefault();
+        const nomeInput = document.getElementById('nomeMarca').value;
+
+        try {
+            const response = await fetch('http://localhost:8080/api/marcas', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nome: nomeInput })
+            });
+
+            if (response.ok) {
+                alert('Marca cadastrada com sucesso!');
+                document.getElementById('form-marca').reset();
+                await carregarMarcas(); // Recarrega os selects
+                renderizarTabelaMarcas(); // Atualiza a tabela na tela
+            } else {
+                alert('Erro ao salvar a marca.');
+            }
+        } catch (error) {
+            console.error("Erro na requisição:", error);
+        }
+    }
+
+    async function renderizarTabelaMarcas() {
+        const corpoTabela = document.getElementById('tabela-marcas-corpo');
+        corpoTabela.innerHTML = '';
+
+        marcasCadastradas.forEach(marca => {
+            corpoTabela.innerHTML += `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 font-mono text-gray-500">${marca.id}</td>
+                        <td class="px-6 py-4 font-semibold text-gray-800">${marca.nome}</td>
+                    </tr>
+                `;
+        });
+    }
+
+    // ================= REQUISICÕES DA API (VEÍCULOS) =================
+    async function carregarMarcas(marcaSelecionada = null) {
+        try {
+            const response = await fetch('http://localhost:8080/api/marcas');
+            marcasCadastradas = await response.json();
+
+            const selectForm = document.getElementById('marcaId');
+            selectForm.innerHTML = '<option value="">Selecione uma marca</option>';
+
+            const selectFiltro = document.getElementById('filtro-marca');
+            selectFiltro.innerHTML = '<option value="">Todas as Marcas</option>';
+
+            marcasCadastradas.forEach(marca => {
+                const selected = (marcaSelecionada === marca.id) ? 'selected' : '';
+                selectForm.innerHTML += `<option value="${marca.id}" ${selected}>${marca.nome}</option>`;
+                selectFiltro.innerHTML += `<option value="${marca.id}">${marca.nome}</option>`;
+            });
+        } catch (error) {
+            console.error("Erro ao carregar marcas:", error);
+        }
+    }
+
+    async function carregarVeiculos() {
+        try {
+            const response = await fetch('http://localhost:8080/api/veiculos');
+            veiculosEstoque = await response.json();
+            aplicarFiltros();
+        } catch (error) {
+            console.error("Erro ao carregar veículos:", error);
+        }
+    }
+
+    function renderizarNaTela(listaDeVeiculos) {
+        const container = document.getElementById('lista-veiculos');
+        const msgVazio = document.getElementById('msg-vazio');
+        container.innerHTML = '';
+
+        if(listaDeVeiculos.length === 0) {
+            msgVazio.classList.remove('hidden');
+            return;
+        } else {
+            msgVazio.classList.add('hidden');
+        }
+
+        listaDeVeiculos.forEach(v => {
+            const imgUrl = v.imagem ? v.imagem : 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?q=80&w=400&auto=format&fit=crop';
+
+            const painelAdmin = usuarioLogado ? `
+                    <div class="bg-gray-100 px-4 py-3 flex justify-between border-t border-gray-200">
+                        <button onclick="prepararEdicao(${v.id})" class="text-blue-600 hover:text-blue-800 font-bold text-sm bg-blue-50 px-3 py-1 rounded">✏️ Editar</button>
+                        <button onclick="excluirVeiculo(${v.id})" class="text-red-600 hover:text-red-800 font-bold text-sm bg-red-50 px-3 py-1 rounded">🗑️ Excluir</button>
+                    </div>
+                ` : '';
+
+            const card = `
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden border-t-4 border-blue-500 hover:shadow-xl transition flex flex-col">
+                        <img src="${imgUrl}" alt="${v.modelo}" class="w-full h-48 object-cover">
+                        <div class="p-4 flex-grow">
+                            <div class="flex justify-between items-start mb-2">
+                                <h2 class="text-lg font-bold text-gray-800 uppercase truncate">${v.modelo}</h2>
+                                <span class="${v.statusDisponibilidade === 'Disponível' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} text-xs font-bold px-2 py-1 rounded shadow-sm">
+                                    ${v.statusDisponibilidade}
+                                </span>
+                            </div>
+                            <div class="text-sm text-gray-600 space-y-1 mb-3">
+                                <p><span class="font-semibold text-gray-800">Marca:</span> ${v.marca ? v.marca.nome : 'N/A'}</p>
+                                <p>Ano: ${v.anoFabricacao} | Cor: ${v.cor}</p>
+                                <p>KM: ${v.quilometragem.toLocaleString('pt-BR')} km</p>
+                            </div>
+                            <p class="text-xl font-black text-blue-700 border-t pt-2">
+                                R$ ${v.preco.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                            </p>
+                        </div>
+                        ${painelAdmin}
+                    </div>
+                `;
+            container.innerHTML += card;
+        });
+    }
+
+    // ================= CRUD VEÍCULOS =================
+    function prepararEdicao(id) {
+        const veiculo = veiculosEstoque.find(v => v.id === id);
+        if (veiculo) {
+            document.getElementById('veiculoId').value = veiculo.id;
+            document.getElementById('modelo').value = veiculo.modelo;
+            document.getElementById('ano').value = veiculo.anoFabricacao;
+            document.getElementById('cor').value = veiculo.cor;
+            document.getElementById('km').value = veiculo.quilometragem;
+            document.getElementById('preco').value = veiculo.preco;
+            document.getElementById('status').value = veiculo.statusDisponibilidade;
+            document.getElementById('imagem').value = veiculo.imagem || '';
+
+            document.getElementById('titulo-form').innerText = "Editar Veículo (ID: " + veiculo.id + ")";
+            carregarMarcas(veiculo.marca ? veiculo.marca.id : null);
+            mostrarAba('cadastro');
+        }
+    }
+
+    async function salvarVeiculo(event) {
+        event.preventDefault();
+        const id = document.getElementById('veiculoId').value;
+        const metodo = id ? 'PUT' : 'POST';
+        const url = id ? `http://localhost:8080/api/veiculos/${id}` : 'http://localhost:8080/api/veiculos';
+
+        const veiculoObjeto = {
+            modelo: document.getElementById('modelo').value,
+            marca: { id: parseInt(document.getElementById('marcaId').value) },
+            anoFabricacao: parseInt(document.getElementById('ano').value),
+            cor: document.getElementById('cor').value,
+            quilometragem: parseInt(document.getElementById('km').value),
+            preco: parseFloat(document.getElementById('preco').value),
+            statusDisponibilidade: document.getElementById('status').value,
+            imagem: document.getElementById('imagem').value
+        };
+
+        try {
+            const response = await fetch(url, {
+                method: metodo,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(veiculoObjeto)
+            });
+
+            if (response.ok) {
+                alert(id ? 'Veículo atualizado!' : 'Veículo salvo no banco!');
+                document.getElementById('veiculoId').value = '';
+                mostrarAba('listagem');
+            } else {
+                alert('Erro na operação. Verifique os dados.');
+            }
+        } catch (error) {
+            console.error("Erro na requisição:", error);
+        }
+    }
+
+    async function excluirVeiculo(id) {
+        if (confirm("Confirma a exclusão definitiva deste veículo do estoque?")) {
+            try {
+                const response = await fetch(`http://localhost:8080/api/veiculos/${id}`, { method: 'DELETE' });
+                if (response.ok) carregarVeiculos();
+            } catch (error) {
+                console.error("Erro ao excluir:", error);
+            }
+        }
+    }
+
+    // Inicialização
+    carregarMarcas();
+    carregarVeiculos();
+</script>
+</body>
+</html>
